@@ -1,0 +1,60 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Build output
+dist
+dist-ssr
+*.local
+
+# Python virtual environments
+.venv_docx
+.venv
+venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.egg-info
+*.egg
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Deployment
+.vercel
+
+# OS
+Thumbs.db
+
+# 3D models GLB
+public/assets/agents/*.glb
+public/assets/agents/*.gltf
+
+# Temporary / junk files
+*.~lock.*
+ChatGPT\ Image*
+
+# Environment variables (local only)
+.env
+.env.*
+!.env.example
+.env*

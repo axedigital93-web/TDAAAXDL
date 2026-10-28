@@ -1,0 +1,617 @@
+/* ============================
+   AI Agent - Full CSS 3D Robot  (v2 — bigger + realistic)
+   ============================ */
+
+/* -- Wrapper / Positioning -- */
+.ai-agent-position-wrapper {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  perspective: 1000px;
+  perspective-origin: 50% 40%;
+  z-index: 10;
+}
+
+.ai-agent-transform-layer {
+  width: 100px;
+  height: 180px;
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateY(var(--agent-rotateY));
+}
+
+/* ==============================
+   MATERIALS
+   ============================== */
+
+/* Glossy white ABS plastic — subtler highlight so the shape reads well */
+.robot-part {
+  position: absolute;
+  background: linear-gradient(150deg, #FFFFFF 0%, #EAF1F8 40%, #C8D8E8 80%, #B0C4D6 100%);
+  box-shadow:
+    inset -4px -4px 8px rgba(170,200,230,0.45),
+    inset  4px  4px 8px rgba(255,255,255,0.95),
+    0 8px 28px rgba(0,0,0,0.18);
+  transform-style: preserve-3d;
+}
+
+/* Metallic dark joint — brushed steel feel */
+.robot-joint {
+  position: absolute;
+  background: radial-gradient(circle at 32% 32%, #8A9BAC, #1A2835);
+  border-radius: 50%;
+  box-shadow:
+    inset  3px  3px 4px rgba(255,255,255,0.40),
+    inset -3px -3px 4px rgba(0,0,0,0.65),
+    0 3px 8px rgba(0,0,0,0.30);
+  z-index: 4;
+  transform-style: preserve-3d;
+}
+
+/* ==============================
+   HEAD
+   ============================== */
+.robot-head-container {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 52px;
+  z-index: 5;
+  transform-style: preserve-3d;
+}
+
+.robot-head {
+  width: 100%;
+  height: 100%;
+  border-radius: 46px 46px 36px 36px;
+  transform-style: preserve-3d;
+}
+
+/* 3D side-depth of head */
+.robot-head::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 46px 46px 36px 36px;
+  background: linear-gradient(180deg, #C4D4E2 0%, #A8BCCC 100%);
+  transform: translateX(10px) translateZ(-10px);
+  z-index: -1;
+}
+
+/* Top dome highlight */
+.robot-head::before {
+  content: '';
+  position: absolute;
+  top: 4px; left: 12%; width: 76%; height: 40%;
+  border-radius: 50% 50% 40% 40%;
+  background: rgba(255,255,255,0.45);
+  filter: blur(3px);
+}
+
+/* Ear dials */
+.robot-head-ear {
+  position: absolute;
+  top: 19px;
+  width: 11px;
+  height: 17px;
+  background: linear-gradient(135deg, #6B7C8D, #1C2B38);
+  border-radius: 5px;
+  box-shadow: inset 1px 1px 3px rgba(255,255,255,0.35), 0 2px 5px rgba(0,0,0,0.3);
+  transform-style: preserve-3d;
+}
+.robot-head-ear::after {
+  content: '';
+  position: absolute;
+  top: 4px; left: 3px;
+  width: 5px; height: 9px;
+  border-radius: 3px;
+  background: rgba(56,189,248,0.5);
+  box-shadow: 0 0 5px rgba(56,189,248,0.8);
+}
+.robot-head-ear.left  { left: -3px; }
+.robot-head-ear.right { right: -3px; }
+
+/* ==============================
+   VISOR / SCREEN  — key feature
+   ============================== */
+.robot-visor {
+  position: absolute;
+  top: 17px;
+  left: 50%;
+  transform: translateX(-50%) translateZ(8px);
+  width: 62px;
+  height: 17px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #0D1A26 0%, #040C14 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  overflow: visible;
+  box-shadow:
+    inset 0 3px 6px rgba(0,0,0,0.9),
+    0 0 14px rgba(56,189,248,0.55),
+    0 0 30px rgba(56,189,248,0.22),
+    0 3px 8px rgba(0,0,0,0.35);
+  backface-visibility: hidden;
+}
+
+/* Glass glare on visor */
+.robot-visor::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.22) 0%, transparent 100%);
+  border-radius: 999px 999px 0 0;
+}
+
+/* Screen glow ring */
+.robot-visor::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 999px;
+  border: 1px solid rgba(56,189,248,0.45);
+  box-shadow: 0 0 10px rgba(56,189,248,0.35);
+}
+
+/* Eyes — brighter, bigger glow */
+.robot-eye {
+  width: 13px;
+  height: 6px;
+  background: linear-gradient(90deg, #7DD3FC, #38BDF8);
+  border-radius: 3px;
+  opacity: 1;
+  box-shadow:
+    0 0 8px rgba(56,189,248,1),
+    0 0 18px rgba(56,189,248,0.7),
+    0 0 32px rgba(56,189,248,0.35);
+  backface-visibility: hidden;
+}
+
+/* ==============================
+   NECK
+   ============================== */
+.robot-neck {
+  position: absolute;
+  top: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 7px;
+  background: linear-gradient(90deg, #5C6E7F, #2C3E50);
+  border-radius: 3px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.35);
+  z-index: 3;
+}
+
+/* ==============================
+   TORSO
+   ============================== */
+.robot-torso {
+  position: absolute;
+  top: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 86px;
+  height: 64px;
+  border-radius: 36px 36px 46px 46px;
+  z-index: 4;
+}
+
+/* 3D depth face on torso side */
+.robot-torso::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 36px 36px 46px 46px;
+  background: linear-gradient(180deg, #B0C4D4 0%, #8CAABF 100%);
+  transform: translateX(11px) translateZ(-11px);
+  z-index: -1;
+}
+
+/* Torso top ridge */
+.robot-torso::before {
+  content: '';
+  position: absolute;
+  top: 4px; left: 10%; width: 80%; height: 22%;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.28);
+  filter: blur(2px);
+}
+
+/* ==============================
+   CHEST SCREEN — most important
+   ============================== */
+.robot-chest-panel {
+  position: absolute;
+  top: 68px;
+  left: 50%;
+  transform: translateX(-50%) translateZ(6px);
+  width: 50px;
+  height: 30px;
+  border-radius: 10px;
+  /* LCD / OLED screen look */
+  background:
+    linear-gradient(135deg,
+      rgba(0,200,255,0.08) 0%,
+      rgba(0,100,200,0.18) 40%,
+      rgba(0,50,120,0.28) 100%
+    ),
+    #050E1A;
+  border: 1.5px solid rgba(56,189,248,0.65);
+  box-shadow:
+    0 0 12px rgba(56,189,248,0.55),
+    0 0 26px rgba(56,189,248,0.25),
+    inset 0 0 12px rgba(56,189,248,0.12),
+    inset 0 1px 2px rgba(255,255,255,0.15);
+  z-index: 5;
+  overflow: hidden;
+}
+
+/* Screen scanlines effect */
+.robot-chest-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(56,189,248,0.06) 2px,
+    rgba(56,189,248,0.06) 4px
+  );
+}
+
+/* Screen data bars */
+.robot-chest-panel::after {
+  content: '';
+  position: absolute;
+  bottom: 5px; left: 5px;
+  width: 40px; height: 2px;
+  background: linear-gradient(90deg, rgba(56,189,248,0.9) 65%, transparent 100%);
+  border-radius: 1px;
+  box-shadow: 0 -5px 0 rgba(56,189,248,0.5), 0 -10px 0 rgba(56,189,248,0.3);
+}
+
+/* Waist joint */
+.robot-waist-joint {
+  position: absolute;
+  top: 113px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 9px;
+  background: linear-gradient(135deg, #4A5F70, #1C2B38);
+  border-radius: 4.5px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  z-index: 3;
+}
+
+/* ==============================
+   ARMS — 3D
+   ============================== */
+.robot-arm-group {
+  position: absolute;
+  top: 62px;
+  left: 50%;
+  width: 112px;
+  height: 76px;
+  transform: translateX(-50%);
+  z-index: 6;
+  pointer-events: none;
+  transform-style: preserve-3d;
+}
+
+/* Default arm containers */
+.robot-arm-container {
+  position: absolute;
+  top: 0;
+  width: 20px;
+  height: 66px;
+  transform-style: preserve-3d;
+}
+
+.robot-arm-container.left {
+  left: 1px;
+  transform-origin: 10px 7px 0;
+  transform: rotateZ(-38deg);
+}
+.robot-arm-container.right {
+  right: 1px;
+  transform-origin: 10px 7px 0;
+  transform: rotateZ(38deg);
+}
+
+/* ---- MIRRORED: right-side robots, both arms reach LEFT ---- */
+.robot-arm-group.mirrored .robot-arm-container.left {
+  transform-origin: 10px 7px 0;
+  transform: rotateZ(-42deg) rotateY(-65deg);
+}
+.robot-arm-group.mirrored .robot-arm-container.right {
+  transform-origin: 10px 7px 0;
+  transform: rotateZ(-30deg) rotateY(-70deg);
+}
+
+/* Shoulder ball */
+.robot-shoulder {
+  width: 14px;
+  height: 14px;
+  top: 0;
+  left: 3px;
+}
+
+/* Upper arm bar */
+.robot-single-arm {
+  position: absolute;
+  top: 9px;
+  left: 6.5px;
+  width: 7px;
+  height: 34px;
+  border-radius: 3.5px;
+  transform-origin: top center;
+  transform-style: preserve-3d;
+}
+
+/* Arm depth face */
+.robot-single-arm::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 3.5px;
+  background: #A8BCCC;
+  transform: translateX(5px) translateZ(-5px);
+  z-index: -1;
+}
+
+/* Elbow ring */
+.robot-single-arm::before {
+  content: '';
+  position: absolute;
+  top: 14px; left: -2px;
+  width: 11px; height: 6px;
+  background: linear-gradient(135deg, #5A6E80, #1C2B38);
+  border-radius: 3px;
+}
+
+/* Wrist metal ring */
+.robot-wrist-metal {
+  position: absolute;
+  top: 31px;
+  left: 4px;
+  width: 12px;
+  height: 5px;
+  background: linear-gradient(135deg, #5A6E80, #1C2B38);
+  border-radius: 2.5px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* Hand / palm */
+.robot-hand {
+  position: absolute;
+  top: 35px;
+  left: -1px;
+  width: 16px;
+  height: 14px;
+  transform-origin: top center;
+  transform-style: preserve-3d;
+  z-index: 3;
+}
+
+.robot-palm {
+  width: 14px;
+  height: 10px;
+  border-radius: 5px;
+  background: linear-gradient(145deg, #FFFFFF, #D0E0F0);
+  box-shadow: inset -1px -1px 3px rgba(160,185,210,0.5), 0 2px 4px rgba(0,0,0,0.15);
+  position: relative;
+}
+
+/* Fingers */
+.robot-finger-group {
+  display: flex;
+  gap: 1.5px;
+  position: absolute;
+  top: 10px;
+  left: 1px;
+}
+
+.robot-finger {
+  width: 3px;
+  height: 8px;
+  background: linear-gradient(180deg, #5A6E80 0%, #FFFFFF 45%, #C0D0E0 100%);
+  border-radius: 1.5px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+}
+
+.robot-finger.thumb {
+  position: absolute;
+  left: -4px;
+  top: 3px;
+  height: 7px;
+  transform: rotate(-28deg);
+}
+
+/* ==============================
+   LEGS — 3D
+   ============================== */
+.robot-leg-group {
+  position: absolute;
+  top: 119px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 58px;
+  z-index: 3;
+  transform-style: preserve-3d;
+}
+
+.robot-leg {
+  position: absolute;
+  top: 0;
+  width: 20px;
+  height: 55px;
+  transform-style: preserve-3d;
+}
+.robot-leg.left  { left: 7px;  transform-origin: 10px 7px 0; }
+.robot-leg.right { right: 7px; transform-origin: 10px 7px 0; }
+
+.robot-hip {
+  width: 13px;
+  height: 13px;
+  top: 0;
+  left: 3px;
+}
+
+.robot-single-leg {
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  width: 7px;
+  height: 26px;
+  border-radius: 3.5px;
+  transform-style: preserve-3d;
+}
+
+.robot-single-leg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 3.5px;
+  background: #A0B4C4;
+  transform: translateX(5px) translateZ(-5px);
+  z-index: -1;
+}
+
+/* Knee ring */
+.robot-single-leg::before {
+  content: '';
+  position: absolute;
+  top: 10px; left: -3px;
+  width: 13px; height: 6px;
+  background: linear-gradient(135deg, #5A6E80, #1C2B38);
+  border-radius: 3px;
+}
+
+.robot-ankle-metal {
+  position: absolute;
+  top: 32px;
+  left: 5px;
+  width: 11px;
+  height: 5px;
+  background: linear-gradient(135deg, #5A6E80, #1C2B38);
+  border-radius: 2.5px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* Feet */
+.robot-foot {
+  position: absolute;
+  top: 35px;
+  left: -5px;
+  width: 30px;
+  height: 18px;
+  border-radius: 9px;
+  background: linear-gradient(145deg, #FFFFFF 0%, #EAF2FA 55%, #C0D2E4 100%);
+  box-shadow: 0 7px 18px rgba(0,0,0,0.22), inset 0 1px 3px #FFFFFF;
+  transform-style: preserve-3d;
+}
+
+.robot-foot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 9px;
+  background: #98AFBF;
+  transform: translateX(7px) translateZ(-7px);
+  z-index: -1;
+}
+
+/* ==============================
+   HOLOGRAPHIC SCREEN PANEL  — main upgrade
+   ============================== */
+.hologram-panel-container {
+  position: absolute;
+  top: 20px;
+  left: 66%;
+  transform: translateX(-50%) translateZ(36px) rotateY(8deg);
+  z-index: 20;
+  transform-style: preserve-3d;
+  filter: drop-shadow(0 0 10px rgba(56,189,248,0.6));
+}
+
+.hologram-panel {
+  width: 58px;
+  height: 72px;
+  background:
+    linear-gradient(160deg,
+      rgba(186,230,253,0.18) 0%,
+      rgba(56,189,248,0.08) 50%,
+      rgba(0,50,120,0.15) 100%
+    );
+  border: 1.5px solid rgba(125,211,252,0.65);
+  border-radius: 8px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow:
+    0 0 20px rgba(56,189,248,0.30),
+    0 0 45px rgba(56,189,248,0.12),
+    inset 0 0 16px rgba(255,255,255,0.30),
+    inset 0 0 30px rgba(56,189,248,0.08);
+  opacity: 0.97;
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Scanlines overlay on hologram */
+.hologram-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(56,189,248,0.05) 3px,
+    rgba(56,189,248,0.05) 6px
+  );
+  pointer-events: none;
+}
+
+/* Corner accent lights */
+.hologram-panel::after {
+  content: '';
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 5px; height: 5px;
+  border-top: 1.5px solid rgba(56,189,248,0.9);
+  border-left: 1.5px solid rgba(56,189,248,0.9);
+}
+
+.hologram-header {
+  height: 3px;
+  width: 100%;
+  background: linear-gradient(90deg, rgba(56,189,248,0.9), rgba(125,211,252,0.5), transparent);
+  border-radius: 2px;
+  margin-bottom: 5px;
+  box-shadow: 0 0 6px rgba(56,189,248,0.7);
+}
+
+.hologram-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hologram-line {
+  height: 2.5px;
+  background: linear-gradient(90deg, rgba(125,211,252,0.95), rgba(56,189,248,0.4));
+  border-radius: 1.5px;
+  box-shadow: 0 0 5px rgba(56,189,248,0.6);
+}
+.hologram-line.short { width: 40%; }
+.hologram-line.med   { width: 70%; }
+.hologram-line.long  { width: 90%; }
