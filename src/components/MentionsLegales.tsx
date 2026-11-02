@@ -21,7 +21,7 @@ const MentionsLegales: React.FC = () => {
               Le site est édité par Axe Digital, cabinet de consulting IA & Solutions numériques.<br/>
               Adresse : Ange Raphael, fin barrière ESSEC<br/>
               Email : contact@axedigital.agency<br/>
-              Téléphone : (+237) 656523837
+              Téléphone : (+237) 671715511
             </p>
 
             <h2 className="text-2xl font-semibold text-gray-800 mb-4">2. Hébergement</h2>

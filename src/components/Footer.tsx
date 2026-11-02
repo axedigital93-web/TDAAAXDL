@@ -76,7 +76,7 @@ const Footer: React.FC = () => {
               </li>
               <li className="flex items-center gap-3 justify-center md:justify-start">
                 <Phone className="flex-shrink-0 text-brand-blue" size={18} />
-                <span>(+237) 656523837</span>
+                <span>(+237) 671715511</span>
               </li>
             </ul>
           </div>
