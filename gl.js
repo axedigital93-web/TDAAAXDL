@@ -1,19 +1,23 @@
 /* Scène WebGL : 13 stations tech (une par section) posées le long d'un fil lumineux.
    main.js pilote tout : frame(f) place la caméra à la station f (fractionnaire pendant les transitions).
-   Couleurs de la charte : bleu #0238d6 / #2843cc, noir #05070f, blanc. */
+   Deux ambiances : sombre (encre #040817, halos additifs + bloom néon) et claire (#eceef2, mêmes formes en couleurs pleines). */
 import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
-const BLUE = 0x0238d6, BLUE_LOGO = 0x2843cc, BLACK = 0x05070f;
+const BLUE = 0x3a5cff, BLUE_LOGO = 0x2843cc, BLACK = 0x040817, PAPER = 0xeceef2;
 const GAP = 26;                                     // distance entre deux stations
 const TY = -1.35;                                   // hauteur du fil
 const tx = z => Math.sin(z * 0.045) * 1.3;          // le fil serpente doucement
-const FONT = 'Poppins, system-ui, sans-serif';
+const FONT = '"Instrument Sans", system-ui, sans-serif';
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 
-export async function start(canvas, { lite, palette, onHover }) {
+export async function start(canvas, { lite, palette, theme = 'dark', onHover }) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: !lite, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(devicePixelRatio, lite ? 1.25 : 1.5));
   renderer.setSize(innerWidth, innerHeight, false);
@@ -30,7 +34,15 @@ export async function start(canvas, { lite, palette, onHover }) {
   const camera = new THREE.PerspectiveCamera(lite ? 52 : 40, innerWidth / innerHeight, 0.1, 120);
   const back = lite ? 10 : 8.5;
   scene.add(camera);
-  scene.add(new THREE.AmbientLight(0x1a2250, 0.7));
+  const amb = new THREE.AmbientLight(0x1a2250, 0.7); scene.add(amb);
+  // bloom néon : ordinateur et thème sombre uniquement
+  let composer = null;
+  if (!lite) {
+    composer = new EffectComposer(renderer);
+    composer.addPass(new RenderPass(scene, camera));
+    composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth / 2, innerHeight / 2), 0.75, 0.5, 0.6));
+    composer.addPass(new OutputPass());
+  }
   const key = new THREE.DirectionalLight(0xf2f5ff, 3.2); key.position.set(5, 7, 6); scene.add(key);
   const rim = new THREE.DirectionalLight(BLUE, 5); rim.position.set(-6, -2, -8); scene.add(rim);
   const camLight = new THREE.PointLight(0x9fb2ff, 16, 24, 1.6); camLight.position.set(1.5, 1.5, 0); camera.add(camLight);
@@ -47,6 +59,18 @@ export async function start(canvas, { lite, palette, onHover }) {
     paper: new THREE.MeshStandardMaterial({ color: 0xe9ecf5, roughness: 0.85, side: THREE.DoubleSide }),
   };
   const tint = [M.holo, M.glow, M.line];             // ces matériaux prennent la couleur du fil
+
+  // thème clair : les halos additifs deviennent des couleurs pleines, les sprites passent au bleu du logo
+  let light = theme === 'light';
+  const paint = obj => obj.traverse(o => {
+    if (!o.material) return;
+    (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => {
+      if (m.userData.add === undefined) m.userData.add = m.blending === THREE.AdditiveBlending;
+      if (m.userData.add) { m.blending = light ? THREE.NormalBlending : THREE.AdditiveBlending; m.needsUpdate = true; }
+      if (m.isSpriteMaterial) m.color.set(light ? BLUE_LOGO : 0xffffff);
+      if (m.uniforms?.uLight) m.uniforms.uLight.value = light ? 1 : 0;
+    });
+  });
 
   /* ---------- utilitaires ---------- */
   const loader = new THREE.TextureLoader();
@@ -194,7 +218,7 @@ export async function start(canvas, { lite, palette, onHover }) {
       x.fillStyle = '#070b1a'; x.fillRect(0, 0, w, h);
       x.fillStyle = '#0d1430'; x.fillRect(0, 0, w, 44); [24, 44, 64].forEach(cx => { x.fillStyle = 'rgba(255,255,255,.25)'; x.beginPath(); x.arc(cx, 22, 6, 0, 7); x.fill(); });
       x.font = `600 18px ${FONT}`; x.fillStyle = '#fff'; x.fillText('CRM · ERP · RH', 96, 28);
-      [['CA', '+350%'], ['Orders', '616'], ['Stock', '98%']].forEach(([a, b], i) => { rr(x, 24 + i * 200, 64, 180, 80, 12); x.fillStyle = i === 1 ? '#0238d6' : '#111a3a'; x.fill(); x.fillStyle = 'rgba(255,255,255,.6)'; x.font = `500 15px ${FONT}`; x.fillText(a, 40 + i * 200, 92); x.fillStyle = '#fff'; x.font = `700 28px ${FONT}`; x.fillText(b, 40 + i * 200, 128); });
+      [['Support IA', '80%'], ['Revenus', '×2'], ['Conversion', '+40%']].forEach(([a, b], i) => { rr(x, 24 + i * 200, 64, 180, 80, 12); x.fillStyle = i === 1 ? '#0238d6' : '#111a3a'; x.fill(); x.fillStyle = 'rgba(255,255,255,.6)'; x.font = `500 15px ${FONT}`; x.fillText(a, 40 + i * 200, 92); x.fillStyle = '#fff'; x.font = `700 28px ${FONT}`; x.fillText(b, 40 + i * 200, 128); });
       [40, 65, 50, 80, 75, 90, 100].forEach((v, i) => { const bh = v * 1.8; const gr = x.createLinearGradient(0, 380 - bh, 0, 380); gr.addColorStop(0, '#2843cc'); gr.addColorStop(1, 'rgba(2,56,214,.15)'); x.fillStyle = gr; rr(x, 40 + i * 82, 380 - bh, 50, bh, 6); x.fill(); });
     });
     const dash = screen(2.3, 1.44, dashTex); dash.position.set(0, 0.9, -3); dash.userData.hover = true; g.add(dash);
@@ -240,13 +264,14 @@ export async function start(canvas, { lite, palette, onHover }) {
 
   /* ===== 7 · Pourquoi nous : 3 circuits, un seul s'allume ===== */
   const pulseMat = (base = 0.35, freq = 60) => new THREE.ShaderMaterial({
-    uniforms: { uColor: { value: new THREE.Color(0x9fb2ff) }, uTime: { value: 0 }, uAmp: { value: 0 }, uFreq: { value: freq }, uBase: { value: base } },
+    uniforms: { uColor: { value: new THREE.Color(0x9fb2ff) }, uTime: { value: 0 }, uAmp: { value: 0 }, uFreq: { value: freq }, uBase: { value: base }, uLight: { value: 0 } },
     vertexShader: `uniform float uTime, uAmp; varying float vU; varying float vD;
       void main(){ vU = uv.x; vec3 p = position; p.y += sin(uv.x*140. + uTime*1.6)*uAmp; p.x += cos(uv.x*90. + uTime)*uAmp*.6;
       vec4 mv = modelViewMatrix*vec4(p,1.); vD = -mv.z; gl_Position = projectionMatrix*mv; }`,
-    fragmentShader: `uniform vec3 uColor; uniform float uTime, uFreq, uBase; varying float vU; varying float vD;
+    fragmentShader: `uniform vec3 uColor; uniform float uTime, uFreq, uBase, uLight; varying float vU; varying float vD;
       void main(){ float k = smoothstep(.9, 1., fract(vU*uFreq - uTime*.7));
-      gl_FragColor = vec4(uColor*(1. + k*2.), (uBase + k*1.1)*exp(-vD*.04)); }`,
+      vec3 c = mix(uColor*(1. + k*2.), uColor*(.55 + k*.35), uLight);
+      gl_FragColor = vec4(c, (uBase*(1. + uLight) + k*1.1)*exp(-vD*.04)); }`,
     transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
   });
   const pulses = [];
@@ -267,26 +292,8 @@ export async function start(canvas, { lite, palette, onHover }) {
     return t => lines.forEach(({ c, good, mark }, i) => { if (!good) mark.material.opacity = Math.sin(t * 1.3 + i) > 0.6 ? 0.3 + Math.random() * 0.5 : 0.8; float(c, t, i, 0.04); });
   });
 
-  /* ===== 8 · Axe Growth : graphique 3D qui monte ===== */
-  def(0, -4, g => {
-    const H = [40, 65, 50, 80, 75, 90, 100].map(v => v / 100 * 2.6);
-    const bars = H.map((h, i) => {
-      const b = new THREE.Group(); b.position.set((i - 3) * 0.62, -1.6, 0);
-      const m = new THREE.Mesh(new THREE.BoxGeometry(0.36, 1, 0.36), i % 2 ? M.holo : M.blue); m.position.y = 0.5;
-      const w = edges(new THREE.BoxGeometry(0.36, 1, 0.36)); w.position.y = 0.5;
-      b.add(m, w); b.scale.y = 0.001; b.userData.h = h; b.userData.hover = true; g.add(b); return b;
-    });
-    const curve = new THREE.CatmullRomCurve3(H.map((h, i) => new THREE.Vector3((i - 3) * 0.62, h + 0.25, 0.3)));
-    const line = new THREE.Mesh(new THREE.TubeGeometry(curve, 80, 0.025, 6), M.glow); line.position.y = -1.6; g.add(line);
-    const roi = sprite(tagTex('ROI +350%', '#ffffff'), 0.6); roi.position.set(1.6, 1.9, 0.3); g.add(roi);
-    const arrow = sprite(tagTex('↗', '#9fb2ff'), 0.6); arrow.position.set(2.5, 1.35, 0.3); g.add(arrow);
-    let k = 0;
-    return (t, dt, active, seen) => {
-      if (seen) k += (1 - k) * Math.min(1, dt * 1.6);
-      bars.forEach((b, i) => { b.scale.y = Math.max(0.001, b.userData.h * clamp(k * 1.6 - i * 0.08)); });
-      line.visible = k > 0.6; roi.material.opacity = arrow.material.opacity = k; float(roi, t, 0, 0.08);
-    };
-  });
+  /* ===== 8 · Résultats : le tableau de bord HTML suffit, station vide pour ne rien superposer ===== */
+  def(0, -4, () => () => {});
 
   /* ===== 9 · Équipe : écrans vidéo en arc + photos en orbite ===== */
   const team = { screens: [], posters: [], vts: new Map(), idx: -1 };
@@ -306,7 +313,7 @@ export async function start(canvas, { lite, palette, onHover }) {
 
   /* ===== 10 · Témoignages : bulles de chat holographiques ===== */
   def(0, -4, g => {
-    const people = [['Richkard Kamena', 'Lyxera', 't1'], ['Junior Tenevock', 'Zaninii', 't2'], ['Eleanor Pena', 'Mapa Sarl', 't3'], ['Jalil Ketou', 'Skynesis', 't4'], ['Marcel Kop', 'Symphoni Social', 't5'], ['Merveille Noumo', 'La grande Royale', 't6']];
+    const people = [['Richkard Kamena', 'Lyxera', 't1'], ['Junior Tenevock', 'Zaninii', 't2'], ['Eleanor Pena', 'Mapa Sarl', 't3'], ['Jalil Ketou', 'Skynesys', 't4'], ['Marcel Kop', 'Symphoni Social', 't5'], ['Merveille Noumo', 'La grande Royale', 't6']];
     const bubbles = people.map(([name, co, img], i) => {
       const tex = canvasTex(512, 200, (x, w, h, pic) => {
         rr(x, 4, 4, w - 8, h - 40, 26); x.fillStyle = 'rgba(10,14,30,.9)'; x.fill(); x.strokeStyle = 'rgba(90,116,255,.8)'; x.lineWidth = 3; x.stroke();
@@ -314,7 +321,7 @@ export async function start(canvas, { lite, palette, onHover }) {
         x.save(); x.beginPath(); x.arc(70, 82, 44, 0, 7); x.clip(); if (pic) x.drawImage(pic, 26, 38, 88, 88); else { x.fillStyle = '#2843cc'; x.fill(); } x.restore();
         x.fillStyle = '#fff'; x.font = `700 30px ${FONT}`; x.fillText(name, 134, 70);
         x.fillStyle = '#9fb2ff'; x.font = `500 22px ${FONT}`; x.fillText(co, 134, 102);
-        x.fillStyle = '#fff'; x.font = `400 24px ${FONT}`; x.fillText('★★★★★  5/5', 134, 136);
+        x.fillStyle = '#fff'; x.font = `400 24px ${FONT}`; x.fillText('★★★★★', 134, 136);
       });
       loadImg(`assets/img/${img}.webp`).then(p => p && tex.redraw(p));
       const b = new THREE.Mesh(new THREE.PlaneGeometry(2.05, 0.8), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, toneMapped: false, side: THREE.DoubleSide }));
@@ -396,6 +403,7 @@ export async function start(canvas, { lite, palette, onHover }) {
     if (lite) s.group.scale.setScalar(0.72);
     scene.add(s.group);
     s.update = await s.build(s.group);
+    paint(s.group);
     s.built = true;
   };
   const idle = fn => ('requestIdleCallback' in window ? requestIdleCallback(fn, { timeout: 600 }) : setTimeout(fn, 60));
@@ -456,7 +464,7 @@ export async function start(canvas, { lite, palette, onHover }) {
         if (Math.abs(k - 1) > 0.001 || o === hovered) o.scale.copy(o.userData.s0).multiplyScalar(k);
       });
 
-      renderer.render(scene, camera);
+      if (composer && !light) composer.render(); else renderer.render(scene, camera);
     },
     // point d'attache n°e de la section i sur le fil, projeté à l'écran
     project(i, e, out) {
@@ -480,8 +488,17 @@ export async function start(canvas, { lite, palette, onHover }) {
         s.userData.screen.material.map = map; s.userData.screen.material.needsUpdate = true;
       });
     },
-    resize() { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight, false); },
+    resize() { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight, false); composer?.setSize(innerWidth, innerHeight); },
+    setTheme(name) {
+      light = name === 'light';
+      scene.background.set(light ? PAPER : BLACK);
+      scene.fog.color.set(light ? PAPER : BLACK); scene.fog.density = light ? 0.05 : 0.045;
+      amb.color.set(light ? 0xffffff : 0x1a2250); amb.intensity = light ? 1.5 : 0.7;
+      base.set(light ? BLUE_LOGO : 0x7d93ff);
+      paint(scene);
+    },
   };
+  api.setTheme(theme);
   canvas.classList.add('on');
   return api;
 }
