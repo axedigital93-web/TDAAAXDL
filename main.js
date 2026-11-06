@@ -160,7 +160,7 @@ syncThemeBtn();
 themeBtn.addEventListener('click', () => {
   const next = root.dataset.theme === 'light' ? 'dark' : 'light';
   root.dataset.theme = next;
-  store.set('theme', next);
+  store.set('axe-theme', next);
   $('meta[name="theme-color"]').content = next === 'light' ? '#eceef2' : '#040817';
   syncThemeBtn();
   gl?.setTheme(next);
@@ -193,18 +193,18 @@ mq.innerHTML += mq.innerHTML.replace(/alt="[^"]*"/g, 'alt="" aria-hidden="true"'
 
 /* ---------- Défilement doux ---------- */
 let lenis = null;
-if (!reduce && window.Lenis) lenis = new window.Lenis({ lerp: 0.085, wheelMultiplier: 0.9, autoRaf: false });
+if (!reduce && window.Lenis) lenis = new window.Lenis({ lerp: 0.1, wheelMultiplier: 0.85, autoRaf: false });
 
 /* ---------- Plans en profondeur ---------- */
 const main = $('main'), foot = $('.foot');
-const P = 1200, ZFAR = -1600, ZNEAR = 750;     // perspective et profondeurs (px)
+const P = 1200, ZFAR = -700, ZNEAR = 320;      // perspective et profondeurs (px) : faibles pour garder les sections stables
 const planes = [];
-const ATTACH = '.label, .hero-title, .hero-foot, .hero-logos, .h2, .sec-sub, .fact, .tile, .vs-row, .panel, .stack, .brief, .cmp, .cta-card, .dash-wrap, .results li, .team-text, .team-frame, .card3d, .testi, .cta-sub, .sec-cta .btn-row, .wrap > div.center, .foot-top, .foot-grid > *, .foot-bottom';
+const ATTACH = '.label, .hero-title, .hero-foot, .hero-logos, .h2, .sec-sub, .fact, .tile, .vs-row, .panel, .stack, .brief, .cmp, .cta-card, .dash-wrap, .results li, .team-text, .team-frame, .testi, .cta-sub, .sec-cta .btn-row, .wrap > div.center, .foot-top, .foot-grid > *, .foot-bottom';
 let spacer = null, D = 0, total = 0, vw = innerWidth, vh = innerHeight;
 // carrousels horizontaux : la section s'arrête et ses cartes défilent de côté
 const rails = [
-  { id: 'solutions-ia', track: $('.h-track'), items: $$('.panel'), tilt: 20 },
-  { id: 'nos-realisations', track: $('.gallery'), items: $$('.gallery .tile'), tilt: 14 },
+  { id: 'solutions-ia', track: $('.h-track'), items: $$('.panel'), tilt: 7 },
+  { id: 'nos-realisations', track: $('.gallery'), items: $$('.gallery .tile'), tilt: 5 },
 ];
 const teamVids = $$('.team-clip'), teamCount = $('.team-count b'), teamSlides = $$('.team-slide');
 
@@ -263,6 +263,7 @@ const goTo = id => {
 const burger = $('.burger');
 const setMenu = open => {
   root.classList.toggle('menu-open', open);
+  if (open) $('.nav').classList.remove('hide');   // le bouton de fermeture doit rester accessible
   burger.setAttribute('aria-expanded', open);
   burger.setAttribute('aria-label', open ? t('Fermer le menu', 'Close menu') : t('Ouvrir le menu', 'Open menu'));
   $('.menu').setAttribute('aria-hidden', !open);
@@ -435,7 +436,7 @@ const project = (i, e) => {
 };
 
 /* ---------- Navigation : section active ---------- */
-const navLinks = $$('.menu-links a');
+const navLinks = $$('.nav-links a, .menu a:not(.btn)');
 const setActiveNav = id => navLinks.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + id));
 const nav = $('.nav'), bar = $('.progress i');
 const tileVids = $$('.tile video').map(v => ({ v, p: planes.find(p => p.el.contains(v)) }));
@@ -483,8 +484,7 @@ function frame(dt) {
     const z = d < 0 ? -d * ZFAR : d * ZNEAR;
     st.visibility = 'visible';
     st.transform = `translate3d(0,0,${z.toFixed(1)}px)`;
-    st.opacity = (d < 0 ? clamp(1 + d * 1.8) : clamp(1 - d * 2.2)).toFixed(3);
-    st.filter = !lite && Math.abs(d) > 0.02 ? `blur(${(Math.abs(d) * 7).toFixed(1)}px)` : 'none';
+    st.opacity = (d < 0 ? clamp(1 + d * 2.2) : clamp(1 - d * 2.6)).toFixed(3);
     st.zIndex = d > 0 ? 3 : d === 0 ? 2 : 1;
     st.pointerEvents = Math.abs(d) < 0.2 ? 'auto' : 'none';
     p.inner.style.transform = `translate3d(0,${(-p.off).toFixed(1)}px,0)`;
@@ -499,8 +499,8 @@ function frame(dt) {
       r.items.forEach((el, k) => {
         const dd = (r.base[k] + tx - cx) / cx, a = Math.min(Math.abs(dd), 1);
         el.style.rotate = `y ${(-dd * r.tilt).toFixed(2)}deg`;
-        el.style.scale = (1 - a * 0.14).toFixed(3);
-        el.style.opacity = (1 - a * 0.55).toFixed(3);
+        el.style.scale = (1 - a * 0.05).toFixed(3);
+        el.style.opacity = (1 - a * 0.2).toFixed(3);
         el.classList.toggle('active', a < 0.35);
       });
     }
@@ -542,7 +542,7 @@ function frame(dt) {
     const d = p.d;
     if (d <= -1 || d >= 1) continue;
     const z = d < 0 ? -d * ZFAR : d * ZNEAR, sc = P / (P - z);
-    const op = d < 0 ? clamp(1 + d * 1.8) : clamp(1 - d * 2.2);
+    const op = d < 0 ? clamp(1 + d * 2.2) : clamp(1 - d * 2.6);
     if (op < 0.02) continue;
     const max = lite ? 6 : 99;
     for (const a of p.atts) {
@@ -552,10 +552,10 @@ function frame(dt) {
       const exs = cx + (a.x + ox - cx) * sc, ecy = cy + (a.cy - p.off - cy) * sc;
       // arrivée / départ : l'élément est tiré vers son point d'attache ; contenu encore sous l'écran : il remonte le long du fil
       const kd0 = d === 0 ? 0 : clamp(Math.abs(d) * (1.6 + Math.min(a.e, 8) * 0.18)), kd = kd0 * kd0;   // les éléments se posent dans l'ordre de lecture
-      const ki = d === 0 ? clamp((ecy - vh * 0.9) / (vh * 0.5)) : 0;
+      const ki = 0;
       const k = kd >= ki ? kd : ease(ki);
       const apx = cx + (anchor.x - cx) / sc, apy = cy + (anchor.y - cy) / sc + p.off;
-      let dx = (apx - a.x - ox) * 0.45, dy = (apy - a.y) * 0.45;   // tirés vers le fil sans s'empiler
+      let dx = (apx - a.x - ox) * 0.16, dy = (apy - a.y) * 0.16;   // tirés vers le fil, juste assez pour suggérer l'attache
       // à l'arrivée : tiré jusqu'au fil ; pendant la lecture : simple glissement limité (pas d'empilement)
       const m = kd >= ki ? k : Math.min(1, 70 / (Math.hypot(dx, dy) || 1)) * k;
       dx *= m; dy *= m;
@@ -678,7 +678,7 @@ if (fine && !reduce && gsap) {
     b.addEventListener('pointerleave', () => gsap.to(b, { x: 0, y: 0, duration: 0.8, ease: 'elastic.out(1,.4)' }));
   });
   // cartes inclinables + reflet qui suit la souris
-  $$('.card3d, .tile, .stack').forEach(c => {
+  $$('.tile, .stack').forEach(c => {
     const lift = c.classList.contains('tile') ? -10 : 0;
     c.addEventListener('pointermove', e => {
       const r = c.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
@@ -699,7 +699,7 @@ soundBtn.addEventListener('click', () => {
 });
 document.addEventListener('pointerover', e => {
   if (!sfx.on) return;
-  const el = e.target.closest('a, button, .opt, .tile, .card3d');
+  const el = e.target.closest('a, button, .opt, .tile');
   if (!el || el.contains(e.relatedTarget)) return;
   const r = el.getBoundingClientRect();
   sfx.hover(r.left + r.width / 2);

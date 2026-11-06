@@ -304,11 +304,8 @@ export async function start(canvas, { lite, palette, theme = 'dark', onHover }) 
       s.position.set(Math.sin(a) * R, i % 2 ? 0.35 : -0.15, -Math.cos(a) * R + R - 1.5); s.rotation.y = -a; s.userData.hover = true;
       team.screens.push(s); team.posters.push(tex); g.add(s);
     });
-    const ring = new THREE.Group(); ring.position.set(0, -2.6, -4); g.add(ring);
-    const P = lite ? 4 : 8;
-    for (let i = 0; i < P; i++) { const a = i / P * Math.PI * 2, f = screen(0.8, 0.45, imgTex(`assets/team/team-${i + 1}.webp`), { bezel: 0.03, depth: 0.03 }); f.position.set(Math.sin(a) * 3.8, Math.sin(a * 2) * 0.5, Math.cos(a) * 3.8); f.rotation.y = a; ring.add(f); }
     const big = new THREE.Vector3(1.12, 1.12, 1.12), one = new THREE.Vector3(1, 1, 1);
-    return (t, dt) => { ring.rotation.y += dt * 0.08; team.screens.forEach((s, i) => { float(s, t, i, 0.05); s.scale.lerp(i === team.idx ? big : one, 0.1); }); };
+    return (t) => { team.screens.forEach((s, i) => { float(s, t, i, 0.05); s.scale.lerp(i === team.idx ? big : one, 0.1); }); };
   });
 
   /* ===== 10 · Témoignages : bulles de chat holographiques ===== */
@@ -492,7 +489,7 @@ export async function start(canvas, { lite, palette, theme = 'dark', onHover }) 
     setTheme(name) {
       light = name === 'light';
       scene.background.set(light ? PAPER : BLACK);
-      scene.fog.color.set(light ? PAPER : BLACK); scene.fog.density = light ? 0.05 : 0.045;
+      scene.fog.color.set(light ? PAPER : BLACK); scene.fog.density = light ? 0.026 : 0.045;
       amb.color.set(light ? 0xffffff : 0x1a2250); amb.intensity = light ? 1.5 : 0.7;
       base.set(light ? BLUE_LOGO : 0x7d93ff);
       paint(scene);
