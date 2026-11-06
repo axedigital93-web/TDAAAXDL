@@ -36,6 +36,36 @@ document.addEventListener('click', e => {
   window.open(wa(text), '_blank', 'noopener');
 });
 
+/* ---------- Formulaire d'audit : la demande part sur WhatsApp, déjà rédigée ---------- */
+const form = $('#audit');
+form.addEventListener('submit', e => {
+  e.preventDefault();
+  const f = new FormData(form), v = k => (f.get(k) || '').toString().trim();
+  const err = $('.audit-error', form);
+  const name = v('name'), phone = v('phone');
+  const bad = [[form.elements.name, !name], [form.elements.phone, phone.replace(/\D/g, '').length < 8]];
+  bad.forEach(([el, ko]) => el.setAttribute('aria-invalid', ko));
+  const first = bad.find(([, ko]) => ko);
+  err.hidden = !first;
+  if (first) { first[0].focus(); return; }
+  const need = form.querySelector('input[name="need"]:checked');
+  const needLabel = en ? need.dataset.enValue : need.value;
+  const details = en
+    ? [`Name: ${name}`, v('company') && `Company: ${v('company')}`, `Phone: ${phone}`, `Need: ${needLabel}`, v('message') && `Project: ${v('message')}`]
+    : [`Nom : ${name}`, v('company') && `Entreprise : ${v('company')}`, `Téléphone : ${phone}`, `Besoin : ${needLabel}`, v('message') && `Projet : ${v('message')}`];
+  const text = [t('Bonjour Axe Digital, je souhaite un audit IA gratuit.', 'Hello Axe Digital, I would like a free AI audit.'), '', ...details.filter(Boolean)].join('\n');
+  window.fbq?.('track', 'Lead', { content_name: needLabel });
+  window.open(wa(text), '_blank', 'noopener');
+});
+// même message, par email
+$('.audit-mail', form).addEventListener('click', () => {
+  const f = new FormData(form), v = k => (f.get(k) || '').toString().trim();
+  const need = form.querySelector('input[name="need"]:checked');
+  const body = [`${t('Nom', 'Name')} : ${v('name')}`, `${t('Entreprise', 'Company')} : ${v('company')}`, `${t('Téléphone', 'Phone')} : ${v('phone')}`, `${t('Besoin', 'Need')} : ${en ? need.dataset.enValue : need.value}`, '', v('message')].join('\n');
+  $('.audit-mail', form).href = `mailto:contact@axedigital.agency?subject=${encodeURIComponent(t('Demande d\'audit IA gratuit', 'Free AI audit request'))}&body=${encodeURIComponent(body)}`;
+});
+form.addEventListener('input', e => { if (e.target.getAttribute('aria-invalid') === 'true') e.target.removeAttribute('aria-invalid'); });
+
 /* ---------- Langue : on mémorise la position et on recharge ---------- */
 $$('.lang button').forEach(b => b.addEventListener('click', () => {
   if (b.dataset.lang === window.LANG) return;
@@ -56,7 +86,7 @@ if (!reduce && window.Lenis) lenis = new window.Lenis({ lerp: 0.085, wheelMultip
 const main = $('main'), foot = $('.foot');
 const P = 1200, ZFAR = -1600, ZNEAR = 750;     // perspective et profondeurs (px)
 const planes = [];
-const ATTACH = '.eyebrow, .hero-title, .hero-sub, .hero-cta, .hero-logos, .chap, .h2, .sec-sub, .stat, .chart-card, .tile, .vs-row, .panel, .stack, .price, .cmp, .cta-card, .dash-wrap, .growth-text h3, .method li, .growth-text > .btn, .team-text, .team-frame, .card3d, .testi, .cta-badge, .cta-sub, .cta-feat, .cta-grid .btn-row, .cta-trust, .wrap > div.center, .foot-grid > *, .foot-bottom';
+const ATTACH = '.eyebrow, .hero-title, .hero-sub, .hero-cta, .hero-logos, .chap, .h2, .sec-sub, .stat, .chart-card, .tile, .vs-row, .panel, .stack, .price, .cmp, .cta-card, .dash-wrap, .growth-text h3, .method li, .growth-text > .btn, .team-text, .team-frame, .card3d, .testi, .cta-badge, .cta-sub, .cta-feat, .cta-grid .btn-row, .cta-trust, .audit-form, .wrap > div.center, .foot-grid > *, .foot-bottom';
 let spacer = null, D = 0, total = 0, vw = innerWidth, vh = innerHeight;
 // carrousels horizontaux : la section s'arrête et ses cartes défilent de côté
 const rails = [
@@ -200,6 +230,10 @@ const project = (i, e) => {
 const navLinks = $$('.nav-links a');
 const setActiveNav = id => navLinks.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + id));
 const nav = $('.nav'), bar = $('.progress i');
+// bouton WhatsApp : absent du hero et de la section du formulaire (il masquerait le bouton d'envoi)
+const waBtn = $('.wa-float');
+let waOff = null;
+const setWa = off => { if (off !== waOff) { waOff = off; waBtn.classList.toggle('off', off); } };
 const tileVids = $$('.tile video').map(v => ({ v, p: planes.find(p => p.el.contains(v)) }));
 
 /* ---------- Boucle unique : scroll → plans → caméra 3D → attaches ---------- */
@@ -274,6 +308,7 @@ function frame(dt) {
   const cur = planes[Math.round(f)];
   if (cur) {
     if (cur.el.id !== lastNav) { lastNav = cur.el.id; setActiveNav(cur.el.id); }
+    setWa(f < 0.5 || cur.el.id === 'cta');
     for (const p of planes) if (!p.seen && Math.abs(p.d) < 0.35) { p.seen = true; p.el.classList.add('seen'); countUp(p.el); }
   }
   if (moved) {
@@ -370,7 +405,10 @@ if (!reduce) {
   if (y0 != null) { window.scrollTo(0, y0); lenis?.scrollTo(y0, { immediate: true }); }
   requestAnimationFrame(loop);
   let rt;
-  addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { const prog = total ? scrollY / total : 0; measure(); sizeThreads(); gl?.resize(); window.scrollTo(0, prog * total); lastY = -1; }, 150); });
+  addEventListener('resize', () => {
+    // clavier mobile ouvert sur un champ : seule la hauteur change, on ne recalcule pas (sinon la page saute)
+    if (innerWidth === vw && document.activeElement?.matches('input, textarea, select')) return;
+    clearTimeout(rt); rt = setTimeout(() => { const prog = total ? scrollY / total : 0; measure(); sizeThreads(); gl?.resize(); window.scrollTo(0, prog * total); lastY = -1; }, 150); });
   document.fonts?.ready.then(() => { const prog = total ? scrollY / total : 0; measure(); window.scrollTo(0, prog * total); lastY = -1; });
   addEventListener('load', () => { const prog = total ? scrollY / total : 0; measure(); window.scrollTo(0, prog * total); lastY = -1; });
 } else {
@@ -383,6 +421,7 @@ if (!reduce) {
     if (!en.isIntersecting) return;
     const i = sections.indexOf(en.target);
     setActiveNav(en.target.id);
+    setWa(i === 0 || en.target.id === 'cta');
     gl?.frame(0, 0, 0, 0, 0, i);
     const c = colorAt(i); document.documentElement.style.setProperty('--thread', c.join(','));
   }), { rootMargin: '-45% 0px -45% 0px' });

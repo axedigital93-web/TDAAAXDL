@@ -1,0 +1,13 @@
+{
+  "name": "Axe Digital",
+  "short_name": "Axe Digital",
+  "description": "Consulting IA & solutions numériques adaptées à l'Afrique",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#05070f",
+  "theme_color": "#05070f",
+  "icons": [
+    { "src": "assets/img/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/img/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
