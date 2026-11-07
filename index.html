@@ -60,6 +60,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&family=Instrument+Serif:ital@0;1&display=swap" media="print" onload="this.media='all'" />
+  <!-- Poppins (police du logo) pour l'intro : chargée en priorité, sans police de secours visible -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&display=block" />
 
   <!-- CSS critique : thème appliqué avant tout affichage -->
   <style>
@@ -110,9 +112,14 @@
 
   <!-- ============ INTRO ============ -->
   <div class="loader" aria-hidden="true">
-    <div class="loader-core"><i></i><i></i><i></i></div>
-    <p class="loader-word">A X E <span>D I G I T A L</span></p>
-    <p class="loader-count"><b>000</b><span data-en="Booting the studio">Initialisation du studio</span></p>
+    <div class="loader-logo">
+      <img class="logo-dark-bg" src="assets/img/logo-axe-white.webp" alt="" width="163" height="120" />
+      <img class="logo-light-bg" src="assets/img/logo-axe-ink.webp" alt="" width="163" height="120" />
+      <i class="loader-ring"></i>
+    </div>
+    <p class="loader-tag" data-en="AI consulting &amp; digital solutions">Consulting IA &amp; solutions numériques</p>
+    <div class="loader-bar"><i></i></div>
+    <p class="loader-count"><b>000</b><span data-en="Loading">Chargement</span></p>
   </div>
 
   <canvas id="gl" aria-hidden="true"></canvas>
@@ -187,7 +194,7 @@
         <div class="facts">
           <div class="fact"><b><span data-count="14" data-count-src=".gallery .tile">14</span></b><p data-en="projects delivered, <em>all visible</em> on this page">projets livrés, <em>tous visibles</em> sur cette page</p></div>
           <div class="fact"><b><span data-count="4" data-count-src=".stack">4</span></b><p data-en="in-house products <em>already in use</em>">produits maison <em>déjà en service</em></p></div>
-          <div class="fact"><b><span data-count="9" data-count-src=".marquee-track img">9</span></b><p data-en="partner brands, in Cameroon <em>and the UK</em>">marques partenaires, au Cameroun <em>et au Royaume-Uni</em></p></div>
+          <div class="fact"><b><span data-count="9" data-count-src=".marquee-track img">9</span></b><p data-en="partner brands in Cameroon, the UK, Germany, <em>China and Canada</em>">marques partenaires au Cameroun, au Royaume-Uni, en Allemagne, <em>en Chine et au Canada</em></p></div>
           <div class="fact"><b><span data-count="5">5</span></b><p data-en="platforms: Web, Android, iOS, <em>Windows &amp; Linux</em>">plateformes : Web, Android, iOS, <em>Windows &amp; Linux</em></p></div>
         </div>
       </div>

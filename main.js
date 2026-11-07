@@ -185,6 +185,7 @@ mq.innerHTML += mq.innerHTML.replace(/alt="[^"]*"/g, 'alt="" aria-hidden="true"'
     const el = now - t0, target = ready ? 100 : Math.min(92, el / 25);
     const v = Math.min(100, +count.textContent + Math.max(1, (target - count.textContent) * 0.12));
     count.textContent = String(Math.floor(v)).padStart(3, '0');
+    $('.loader').style.setProperty('--lp', v / 100);
     if ((v >= 100 && el > 900) || el > 3800) { count.textContent = '100'; root.classList.add('loaded'); return; }
     requestAnimationFrame(step);
   };
