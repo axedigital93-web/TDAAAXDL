@@ -49,7 +49,7 @@ export async function start(canvas, { lite, palette, theme = 'dark', onHover }) 
 
   /* ---------- matériaux ---------- */
   const M = {
-    blue: new THREE.MeshPhysicalMaterial({ color: BLUE_LOGO, metalness: 0.45, roughness: 0.2, clearcoat: 1, clearcoatRoughness: 0.1, emissive: BLUE, emissiveIntensity: 0.28 }),
+    blue: new THREE.MeshPhysicalMaterial({ color: 0x1f35a8, metalness: 0.45, roughness: 0.2, clearcoat: 1, clearcoatRoughness: 0.1, emissive: 0x14217a, emissiveIntensity: 0.3 }),
     chrome: new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 1, roughness: 0.16 }),
     obsidian: new THREE.MeshPhysicalMaterial({ color: 0x0a0e1c, metalness: 0.4, roughness: 0.25, clearcoat: 1, clearcoatRoughness: 0.08 }),
     holo: new THREE.MeshBasicMaterial({ color: 0x5a74ff, transparent: true, opacity: 0.14, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }),
@@ -67,7 +67,7 @@ export async function start(canvas, { lite, palette, theme = 'dark', onHover }) 
     (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => {
       if (m.userData.add === undefined) m.userData.add = m.blending === THREE.AdditiveBlending;
       if (m.userData.add) { m.blending = light ? THREE.NormalBlending : THREE.AdditiveBlending; m.needsUpdate = true; }
-      if (m.isSpriteMaterial) m.color.set(light ? BLUE_LOGO : 0xffffff);
+      if (m.isSpriteMaterial) m.color.set(light ? 0x14217a : 0xffffff);
       if (m.uniforms?.uLight) m.uniforms.uLight.value = light ? 1 : 0;
     });
   });
@@ -83,7 +83,7 @@ export async function start(canvas, { lite, palette, theme = 'dark', onHover }) 
     tex.redraw();
     return tex;
   };
-  const tagTex = (txt, color = '#9fb2ff') => canvasTex(256, 128, (x, w, h) => {
+  const tagTex = (txt, color = '#4a63e0') => canvasTex(256, 128, (x, w, h) => {
     x.font = `600 60px ${FONT}`; x.textAlign = 'center'; x.textBaseline = 'middle';
     x.shadowColor = color; x.shadowBlur = 16; x.fillStyle = color; x.fillText(txt, w / 2, h / 2);
   });
@@ -414,7 +414,7 @@ export async function start(canvas, { lite, palette, theme = 'dark', onHover }) 
 
   /* ---------- API pour main.js ---------- */
   const cols = palette.map(c => new THREE.Color(c));
-  const color = new THREE.Color(), tmp = new THREE.Vector3(), base = new THREE.Color(0x7d93ff), blue = new THREE.Color(BLUE);
+  const color = new THREE.Color(), tmp = new THREE.Vector3(), base = new THREE.Color(BLUE_LOGO), blue = new THREE.Color(BLUE);
   let px = 0, py = 0;
   const api = {
     color,
@@ -429,6 +429,7 @@ export async function start(canvas, { lite, palette, theme = 'dark', onHover }) 
       // teinte de l'ambiance, interpolée entre les sections
       const c0 = Math.floor(clamp(colorF, 0, COUNT - 1)), c1 = Math.min(COUNT - 1, c0 + 1);
       color.lerpColors(cols[c0], cols[c1], clamp(colorF - c0));
+      if (light) color.multiplyScalar(0.6);   // illustrations en bleu foncé sur fond clair
       const speed = 1 + Math.min(Math.abs(vel) / 30, 3);
       pulses.forEach(m => { m.uniforms.uColor.value.copy(color); m.uniforms.uTime.value += dt * speed; m.uniforms.uAmp.value = Math.min(Math.abs(vel) * 0.0015, 0.12) + 0.008; });
       tint.forEach(m => m.color.copy(base).lerp(color, 0.75));
@@ -491,7 +492,7 @@ export async function start(canvas, { lite, palette, theme = 'dark', onHover }) 
       scene.background.set(light ? PAPER : BLACK);
       scene.fog.color.set(light ? PAPER : BLACK); scene.fog.density = light ? 0.026 : 0.045;
       amb.color.set(light ? 0xffffff : 0x1a2250); amb.intensity = light ? 1.5 : 0.7;
-      base.set(light ? BLUE_LOGO : 0x7d93ff);
+      base.set(light ? 0x14217a : BLUE_LOGO);
       paint(scene);
     },
   };

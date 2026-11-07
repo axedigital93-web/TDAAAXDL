@@ -16,7 +16,7 @@ const { gsap } = window;
 const root = document.documentElement;
 
 // teintes du fil, une par section (accueil → footer) : uniquement les bleus de la charte
-const PALETTE = ['#3a5cff', '#5b7cff', '#2843cc', '#93a8ff', '#3a5cff', '#6f8cff', '#2843cc', '#5b7cff', '#93a8ff', '#3a5cff', '#6f8cff', '#2843cc', '#5b7cff'];
+const PALETTE = ['#2843cc', '#2f4bd6', '#1f35a8', '#3a5cff', '#2843cc', '#2f4bd6', '#1f35a8', '#3a5cff', '#2843cc', '#2f4bd6', '#1f35a8', '#3a5cff', '#2843cc'];
 
 /* ---------- Son : moteur Web Audio génératif (aucun fichier) ---------- */
 const sfx = (() => {
