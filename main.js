@@ -501,7 +501,7 @@ function frame(dt) {
         const dd = (r.base[k] + tx - cx) / cx, a = Math.min(Math.abs(dd), 1);
         el.style.rotate = `y ${(-dd * r.tilt).toFixed(2)}deg`;
         el.style.scale = (1 - a * 0.05).toFixed(3);
-        el.style.opacity = (1 - a * 0.2).toFixed(3);
+        el.style.opacity = (1 - a * 0.08).toFixed(3);
         el.classList.toggle('active', a < 0.35);
       });
     }
