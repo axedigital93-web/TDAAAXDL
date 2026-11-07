@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "echo 'site statique : aucune dépendance'",
+  "buildCommand": "rm -rf dist && mkdir -p dist && cp -r index.html main.js gl.js style.css site.webmanifest robots.txt sitemap.xml assets dist/",
+  "outputDirectory": "dist",
+  "cleanUrls": true,
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=604800" }]
+    }
+  ]
+}
